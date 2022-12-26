@@ -1,1 +1,247 @@
 
+local esp = {
+    players = {},
+    connections = {
+        ChildAdded = nil,
+        ChildRemoved = nil,
+        RenderStepped = nil
+    },
+    settings = {
+        enabled = false,
+        team_check = false,
+        use_display_names = false,
+        max_distance = 0,
+        
+        text_settings = {
+            font_size = 13,
+            font_family = 2
+        },
+
+        drawings = {
+            name = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
+            box = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
+            filled_box = {enabled = false, transparency = 0.3, color = Color3.fromRGB(255, 255, 255)},
+            health_bar = {enabled = false, outline = false, size = 3},
+            health_text = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
+            distance = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
+            view_angle = {enabled = false, size = 10, color = Color3.fromRGB(255, 255, 255)},
+            tool = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)}
+        }
+    },
+    functions = {}
+}
+
+--// Functions
+do
+    esp.functions.Draw = function(type, properties)
+        local newDrawing = Drawing.new(type)
+        for i,v in pairs(properties or {}) do
+            newDrawing[i] = v
+        end
+        return newDrawing
+    end
+
+    esp.functions.CheckTeam = function(v)
+        if game.Players.LocalPlayer.TeamColor == v.TeamColor then
+            return false
+        end
+        return true
+    end
+
+    esp.functions.GetTool = function(v)
+        if v.Character:FindFirstChildOfClass("Tool") then
+            return tostring(v.Character:FindFirstChildOfClass("Tool"))
+        end
+        return "None"
+    end
+
+    esp.functions.NewPlayer = function(v)
+        esp.players[v] = {
+            name = esp.functions.Draw("Text", {Color = Color3.new(1,1,1), Outline = true, Center = true, Size = 13, Font = 2}),
+            filled_box = esp.functions.Draw("Square", {Color = Color3.new(1,1,1), Thickness = 1, Filled = true}),
+            box_outline = esp.functions.Draw("Square", {Color = Color3.new(0,0,0), Thickness = 3}),
+            box = esp.functions.Draw("Square", {Color = Color3.new(1,1,1), Thickness = 1}),
+            health_bar_outline = esp.functions.Draw("Line", {Color = Color3.new(0,0,0), Thickness = 3}),
+            health_bar = esp.functions.Draw("Line", {Color = Color3.new(1,1,1), Thickness = 1}),
+            health_text = esp.functions.Draw("Text", {Color = Color3.new(1,1,1), Outline = true, Center = true, Size = 13, Font = 2}),
+            distance = esp.functions.Draw("Text", {Color = Color3.new(1,1,1), Outline = true, Center = true, Size = 13, Font = 2}),
+            view_angle = esp.functions.Draw("Line", {Color = Color3.new(1,1,1), Thickness = 1}),
+            tool = esp.functions.Draw("Text", {Color = Color3.new(1,1,1), Outline = true, Center = true, Size = 13, Font = 2})
+        }
+    end
+
+    esp.functions.Unload = function()
+        for i,v in pairs(esp.players) do
+            for i,v in pairs(v) do
+                v:Remove()
+            end
+            esp.players[v] = nil
+        end
+        for i,v in pairs(esp.connections) do
+            v:Disconnect()
+        end
+        esp = nil
+    end
+end
+
+--// Setup
+do
+    for _,player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            esp.functions.NewPlayer(player)
+        end
+    end
+
+    esp.connections.ChildAdded = game.Players.ChildAdded:Connect(function(player)
+        esp.functions.NewPlayer(player)
+    end)
+
+    esp.connections.ChildRemoved  = game.Players.ChildRemoved:Connect(function(player)
+        for i,v in pairs(esp.players[player]) do
+            v:Remove()
+        end
+        esp.players[player] = nil
+    end)
+end
+
+esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
+    for i,v in pairs(esp.players) do
+        if i.Character then
+            if i.Character:FindFirstChild("Humanoid") and i.Character:FindFirstChild("HumanoidRootPart") and i.Character:FindFirstChild("Head") then
+                if i.Character.Humanoid.Health > 0 and (esp.settings.max_distance == 0 or (i.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < esp.settings.max_distance) then
+                    local Humanoid = i.Character.Humanoid
+                    local HumanoidRootPart = i.Character.HumanoidRootPart
+                    local Head = i.Character.Head
+
+                    local Vector, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(i.Character.HumanoidRootPart.Position)
+
+                    if onScreen and esp.settings.enabled then
+                        local Size = (game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position - Vector3.new(0, 3, 0)).Y - game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position + Vector3.new(0, 2.6, 0)).Y) / 2
+                        local BoxSize = Vector2.new(math.floor(Size * 1.5), math.floor(Size * 1.9))
+                        local BoxPos = Vector2.new(math.floor(Vector.X - Size * 1.5 / 2), math.floor(Vector.Y - Size * 1.6 / 2))
+                        local BottomOffset = BoxSize.Y + BoxPos.Y + 1
+
+                        if esp.settings.drawings.name.enabled then
+                            v.name.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BoxPos.Y - 16)
+                            v.name.Outline = esp.settings.drawings.name.outline
+                            v.name.Color = esp.settings.drawings.name.color
+                            v.name.Font = esp.settings.text_settings.font_family
+                            v.name.Size = esp.settings.text_settings.font_size
+                            v.name.Text = (esp.settings.use_display_names and i.DisplayName) or i.Name
+                            v.name.Visible = true
+                        else
+                            v.name.Visible = false
+                        end
+
+                        if esp.settings.drawings.box.enabled then
+                            v.box_outline.Size = BoxSize
+                            v.box_outline.Position = BoxPos
+                            v.box_outline.Visible = esp.settings.drawings.box.outline
+                            v.box.Size = BoxSize
+                            v.box.Position = BoxPos
+                            v.box.Color = esp.settings.drawings.box.color
+                            v.box.Visible = true
+                        else
+                            v.box_outline.Visible = false
+                            v.box.Visible = false
+                        end
+
+                        if esp.settings.drawings.filled_box.enabled then
+                            v.filled_box.Size = BoxSize + Vector2.new(-2, -2)
+                            v.filled_box.Position = BoxPos + Vector2.new(1, 1)
+                            v.filled_box.Color = esp.settings.drawings.filled_box.color
+                            v.filled_box.Transparency = esp.settings.drawings.filled_box.transparency
+                            v.filled_box.Visible = true
+                        else
+                            v.filled_box.Visible = false
+                        end
+
+                        if esp.settings.drawings.health_bar.enabled then
+                            v.health_bar.From = Vector2.new((BoxPos.X - 5), BoxPos.Y + BoxSize.Y)
+                            v.health_bar.To = Vector2.new(v.health_bar.From.X, v.health_bar.From.Y - (Humanoid.Health / Humanoid.MaxHealth) * BoxSize.Y)
+                            v.health_bar.Color = Color3.fromRGB(255 - 255 / (Humanoid["MaxHealth"] / Humanoid["Health"]), 255 / (Humanoid["MaxHealth"] / Humanoid["Health"]), 0)
+                            v.health_bar.Visible = true
+                            v.health_bar.Thickness = esp.settings.drawings.health_bar.size
+        
+                            v.health_bar_outline.From = Vector2.new(v.health_bar.From.X, BoxPos.Y + BoxSize.Y + 1)
+                            v.health_bar_outline.To = Vector2.new(v.health_bar.From.X, (v.health_bar.From.Y - 1 * BoxSize.Y) -1)
+                            v.health_bar_outline.Visible = esp.settings.drawings.health_bar.outline
+                            v.health_bar_outline.Thickness = esp.settings.drawings.health_bar.size + 2
+                        else
+                            v.health_bar_outline.Visible = false
+                            v.health_bar.Visible = false
+                        end
+        
+                        if esp.settings.drawings.health_text.enabled then
+                            v.health_text.Text = tostring(math.floor(Humanoid.Health))
+                            v.health_text.Position = Vector2.new((BoxPos.X - 20), (BoxPos.Y + BoxSize.Y - 1 * BoxSize.Y) -1)
+                            v.health_text.Color = esp.settings.drawings.health_text.color
+                            v.health_text.Outline = esp.settings.drawings.health_text.outline
+        
+                            v.health_text.Font = esp.settings.text_settings.font_family
+                            v.health_text.Size = esp.settings.text_settings.font_size
+        
+                            v.health_text.Visible = true
+                        else
+                            v.health_text.Visible = false
+                        end
+
+                        if esp.settings.drawings.distance.enabled and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            v.distance.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BottomOffset)
+                            v.distance.Outline = esp.settings.drawings.distance.outline
+                            v.distance.Text = ("[%sm]"):format(tostring(math.floor((HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)))
+                            v.distance.Color = esp.settings.drawings.distance.color
+                            BottomOffset = BottomOffset + 15
+        
+                            v.distance.Font = esp.settings.text_settings.font_family
+                            v.distance.Size = esp.settings.text_settings.font_size
+        
+                            v.distance.Visible = true
+                        else
+                            v.distance.Visible = false
+                        end
+
+                        if esp.settings.drawings.view_angle.enabled and Head and Head.CFrame then
+                            v.view_angle.From = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).X, game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).Y)
+                            v.view_angle.To = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).X, game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).Y)
+                            v.view_angle.Color = esp.settings.drawings.view_angle.color
+                            v.view_angle.Visible = true
+                        else
+                            v.view_angle.Visible = false
+                        end
+
+                        if esp.settings.drawings.tool.enabled then
+                            v.tool.Visible = true
+                            v.tool.Position = Vector2.new(BoxSize.X + BoxPos.X + v.tool.TextBounds.X / 2 + 3, BoxPos.Y - 3)
+                            v.tool.Outline = esp.settings.drawings.tool.outline
+                            v.tool.Color = esp.settings.drawings.tool.color
+        
+                            v.tool.Font = esp.settings.text_settings.font_family
+                            v.tool.Size = esp.settings.text_settings.font_size
+        
+                            v.tool.Text = esp.functions.GetTool(i)
+                        else
+                            v.tool.Visible = false
+                        end
+                    else
+                        for i,drawing in pairs(v) do
+                            drawing.Visible = false
+                        end
+                    end
+                else
+                    for i,drawing in pairs(v) do
+                        drawing.Visible = false
+                    end
+                end
+            else
+                for i,drawing in pairs(v) do
+                    drawing.Visible = false
+                end
+            end
+        else
+            for i,drawing in pairs(v) do
+                drawing.Visible = false
+            end
+        end
+    end
+end)
