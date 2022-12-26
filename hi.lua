@@ -81,6 +81,7 @@ do
             v:Disconnect()
         end
         esp = nil
+        getgenv().esp = nil
     end
 end
 
