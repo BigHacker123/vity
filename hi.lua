@@ -245,3 +245,5 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
         end
     end
 end)
+
+getgenv().esp = esp
