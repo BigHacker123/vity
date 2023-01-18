@@ -29,7 +29,7 @@ local esp = {
 
             friend_targetted = false,
             friend_targetted_color = Color3.fromRGB(50, 255, 50)
-        }
+        },
 
         drawings = {
             name = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
