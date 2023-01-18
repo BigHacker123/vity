@@ -7,9 +7,9 @@ local esp = {
         RenderStepped = nil
     },
     settings = {
-        enabled = false,
+        enabled = true,
         team_check = false,
-        use_display_names = false,
+        use_display_names = true,
         max_distance = 0,
         
         text_settings = {
@@ -17,15 +17,21 @@ local esp = {
             font_family = 2
         },
 
+        target_settings = {
+            enabled = true,
+            target = nil,
+            color = Color3.fromRGB(255, 0, 0)
+        },
+
         drawings = {
-            name = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
-            box = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
-            filled_box = {enabled = false, transparency = 0.3, color = Color3.fromRGB(255, 255, 255)},
-            health_bar = {enabled = false, outline = false, size = 3},
-            health_text = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
-            distance = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)},
-            view_angle = {enabled = false, size = 10, color = Color3.fromRGB(255, 255, 255)},
-            tool = {enabled = false, outline = false, color = Color3.fromRGB(255, 255, 255)}
+            name = {enabled = true, outline = true, color = Color3.fromRGB(255, 255, 255)},
+            box = {enabled = true, outline = true, color = Color3.fromRGB(255, 255, 255)},
+            filled_box = {enabled = true, transparency = 0.3, color = Color3.fromRGB(255, 255, 255)},
+            health_bar = {enabled = true, outline = true, size = 3},
+            health_text = {enabled = true, outline = true, color = Color3.fromRGB(255, 255, 255)},
+            distance = {enabled = true, outline = true, color = Color3.fromRGB(255, 255, 255)},
+            view_angle = {enabled = true, size = 10, color = Color3.fromRGB(255, 255, 255)},
+            tool = {enabled = true, outline = true, color = Color3.fromRGB(255, 255, 255)}
         }
     },
     functions = {}
@@ -80,8 +86,8 @@ do
         for i,v in pairs(esp.connections) do
             v:Disconnect()
         end
+        table.clear(esp)
         esp = nil
-        getgenv().esp = nil
     end
 end
 
@@ -119,13 +125,16 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                     if onScreen and esp.settings.enabled then
                         local Size = (game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position - Vector3.new(0, 3, 0)).Y - game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position + Vector3.new(0, 2.6, 0)).Y) / 2
                         local BoxSize = Vector2.new(math.floor(Size * 1.5), math.floor(Size * 1.9))
+                        if BoxSize.X < 10 and BoxSize.Y < 12 then
+                            BoxSize = Vector2.new(10,12)
+                        end
                         local BoxPos = Vector2.new(math.floor(Vector.X - Size * 1.5 / 2), math.floor(Vector.Y - Size * 1.6 / 2))
                         local BottomOffset = BoxSize.Y + BoxPos.Y + 1
 
                         if esp.settings.drawings.name.enabled then
                             v.name.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BoxPos.Y - 16)
                             v.name.Outline = esp.settings.drawings.name.outline
-                            v.name.Color = esp.settings.drawings.name.color
+                            v.name.Color =  (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.name.color
                             v.name.Font = esp.settings.text_settings.font_family
                             v.name.Size = esp.settings.text_settings.font_size
                             v.name.Text = (esp.settings.use_display_names and i.DisplayName) or i.Name
@@ -140,7 +149,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                             v.box_outline.Visible = esp.settings.drawings.box.outline
                             v.box.Size = BoxSize
                             v.box.Position = BoxPos
-                            v.box.Color = esp.settings.drawings.box.color
+                            v.box.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.box.color
                             v.box.Visible = true
                         else
                             v.box_outline.Visible = false
@@ -150,7 +159,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.filled_box.enabled then
                             v.filled_box.Size = BoxSize + Vector2.new(-2, -2)
                             v.filled_box.Position = BoxPos + Vector2.new(1, 1)
-                            v.filled_box.Color = esp.settings.drawings.filled_box.color
+                            v.filled_box.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.filled_box.color
                             v.filled_box.Transparency = esp.settings.drawings.filled_box.transparency
                             v.filled_box.Visible = true
                         else
@@ -176,7 +185,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.health_text.enabled then
                             v.health_text.Text = tostring(math.floor(Humanoid.Health))
                             v.health_text.Position = Vector2.new((BoxPos.X - 20), (BoxPos.Y + BoxSize.Y - 1 * BoxSize.Y) -1)
-                            v.health_text.Color = esp.settings.drawings.health_text.color
+                            v.health_text.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.health_text.color
                             v.health_text.Outline = esp.settings.drawings.health_text.outline
         
                             v.health_text.Font = esp.settings.text_settings.font_family
@@ -190,8 +199,8 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.distance.enabled and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                             v.distance.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BottomOffset)
                             v.distance.Outline = esp.settings.drawings.distance.outline
-                            v.distance.Text = ("[%sm]"):format(tostring(math.floor((HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude)))
-                            v.distance.Color = esp.settings.drawings.distance.color
+                            v.distance.Text = ("%sm"):format(tostring(math.floor((HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude / 3.5714285714)))
+                            v.distance.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.distance.color
                             BottomOffset = BottomOffset + 15
         
                             v.distance.Font = esp.settings.text_settings.font_family
@@ -205,7 +214,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.view_angle.enabled and Head and Head.CFrame then
                             v.view_angle.From = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).X, game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).Y)
                             v.view_angle.To = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).X, game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).Y)
-                            v.view_angle.Color = esp.settings.drawings.view_angle.color
+                            v.view_angle.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.view_angle.color
                             v.view_angle.Visible = true
                         else
                             v.view_angle.Visible = false
@@ -215,7 +224,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                             v.tool.Visible = true
                             v.tool.Position = Vector2.new(BoxSize.X + BoxPos.X + v.tool.TextBounds.X / 2 + 3, BoxPos.Y - 3)
                             v.tool.Outline = esp.settings.drawings.tool.outline
-                            v.tool.Color = esp.settings.drawings.tool.color
+                            v.tool.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or esp.settings.drawings.tool.color
         
                             v.tool.Font = esp.settings.text_settings.font_family
                             v.tool.Size = esp.settings.text_settings.font_size
