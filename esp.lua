@@ -143,7 +143,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                 continue
             end
         end
-        local Character =  i.Parent and i.Character or i
+        local Character =  i.Parent == game.Players and i.Character or i
         if Character then
             if Character:FindFirstChild("Humanoid") and Character:FindFirstChild("HumanoidRootPart") and Character:FindFirstChild("Head") then
                 if Character.Humanoid.Health > 0 and (esp.settings.max_distance == 0 or (Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < esp.settings.max_distance) then
