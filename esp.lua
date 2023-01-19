@@ -73,15 +73,18 @@ do
     end
 
     esp.functions.CheckTeam = function(v)
-        if game.Players.LocalPlayer.TeamColor == v.TeamColor then
-            return false
+        if v.Parent == game.Players then
+            if game.Players.LocalPlayer.TeamColor == v.TeamColor then
+                return false
+            end
         end
         return true
     end
 
     esp.functions.GetTool = function(v)
-        if v.Character:FindFirstChildOfClass("Tool") then
-            return tostring(v.Character:FindFirstChildOfClass("Tool"))
+        local Character =  v.Parent == game.Players and v.Character or v
+        if Character:FindFirstChildOfClass("Tool") then
+            return tostring(Character:FindFirstChildOfClass("Tool"))
         end
         return "None"
     end
