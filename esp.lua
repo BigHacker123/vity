@@ -142,7 +142,7 @@ end
 esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
     for i,v in pairs(esp.players) do
         if not i.Parent == game.Players then
-            if esp.settings.ai == false then
+            if not esp.settings.ai then
                 continue
             end
         end
