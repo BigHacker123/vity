@@ -1,3 +1,19 @@
+--[[
+
+    Oblivity Private ESP Library
+      created by demo (demo#0007)
+
+    [YOU MUST GIVE CREDIT IF USED]
+    [YOU MUST GIVE CREDIT IF USED]
+    [YOU MUST GIVE CREDIT IF USED]
+
+    Terms of Use
+      You are allowed to use this ESP as long as you provice a free service, therefore if your script is paid you are not allowed to use this.
+      If you want to use the ESP in a paid script you must be allowed by demo to do so.
+
+    (I know nobody is probably going to read that but I just rather state it, please do not use my code unless you are providing a free service)
+
+]]
 
 local esp = {
     players = {},
@@ -8,6 +24,7 @@ local esp = {
     },
     settings = {
         enabled = true,
+        ai = false,
         team_check = false,
         use_display_names = true,
         max_distance = 0,
@@ -121,14 +138,20 @@ end
 
 esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
     for i,v in pairs(esp.players) do
-        if i.Character then
-            if i.Character:FindFirstChild("Humanoid") and i.Character:FindFirstChild("HumanoidRootPart") and i.Character:FindFirstChild("Head") then
-                if i.Character.Humanoid.Health > 0 and (esp.settings.max_distance == 0 or (i.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < esp.settings.max_distance) then
-                    local Humanoid = i.Character.Humanoid
-                    local HumanoidRootPart = i.Character.HumanoidRootPart
-                    local Head = i.Character.Head
+        if not i.Parent == game.Players then
+            if esp.settings.ai == false then
+                continue
+            end
+        end
+        local Character = i.Character or i
+        if Character then
+            if Character:FindFirstChild("Humanoid") and Character:FindFirstChild("HumanoidRootPart") and Character:FindFirstChild("Head") then
+                if Character.Humanoid.Health > 0 and (esp.settings.max_distance == 0 or (Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < esp.settings.max_distance) then
+                    local Humanoid = Character.Humanoid
+                    local HumanoidRootPart = Character.HumanoidRootPart
+                    local Head = Character.Head
 
-                    local Vector, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(i.Character.HumanoidRootPart.Position)
+                    local Vector, onScreen = game.Workspace.CurrentCamera:WorldToViewportPoint(Character.HumanoidRootPart.Position)
 
                     if onScreen and esp.settings.enabled then
                         local Size = (game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position - Vector3.new(0, 3, 0)).Y - game.Workspace.CurrentCamera:WorldToViewportPoint(HumanoidRootPart.Position + Vector3.new(0, 2.6, 0)).Y) / 2
