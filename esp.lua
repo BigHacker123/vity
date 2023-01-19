@@ -171,7 +171,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                             v.name.Color =  (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.name.color
                             v.name.Font = esp.settings.text_settings.font_family
                             v.name.Size = esp.settings.text_settings.font_size
-                            v.name.Text = (esp.settings.use_display_names and i.DisplayName) or i.Name
+                            v.name.Text = (i.Parent == game.Players and esp.settings.use_display_names and i.DisplayName) or i.Name
                             v.name.Visible = true
                         else
                             v.name.Visible = false
