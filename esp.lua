@@ -141,8 +141,8 @@ end
 
 esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
     for i,v in pairs(esp.players) do
-        if not i.Parent == game.Players then
-            if not esp.settings.ai then
+        if i.Parent ~= game.Players then
+            if esp.settings.ai == false then
                 continue
             end
         end
@@ -168,7 +168,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.name.enabled then
                             v.name.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BoxPos.Y - 16)
                             v.name.Outline = esp.settings.drawings.name.outline
-                            v.name.Color =  (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.name.color
+                            v.name.Color =  (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.name.color
                             v.name.Font = esp.settings.text_settings.font_family
                             v.name.Size = esp.settings.text_settings.font_size
                             v.name.Text = (i.Parent == game.Players and esp.settings.use_display_names and i.DisplayName) or i.Name
@@ -193,7 +193,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.filled_box.enabled then
                             v.filled_box.Size = BoxSize + Vector2.new(-2, -2)
                             v.filled_box.Position = BoxPos + Vector2.new(1, 1)
-                            v.filled_box.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.filled_box.color
+                            v.filled_box.Color = (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.filled_box.color
                             v.filled_box.Transparency = esp.settings.drawings.filled_box.transparency
                             v.filled_box.Visible = true
                         else
@@ -219,7 +219,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.health_text.enabled then
                             v.health_text.Text = tostring(math.floor(Humanoid.Health))
                             v.health_text.Position = Vector2.new((BoxPos.X - 20), (BoxPos.Y + BoxSize.Y - 1 * BoxSize.Y) -1)
-                            v.health_text.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.health_text.color
+                            v.health_text.Color = (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.health_text.color
                             v.health_text.Outline = esp.settings.drawings.health_text.outline
         
                             v.health_text.Font = esp.settings.text_settings.font_family
@@ -234,7 +234,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                             v.distance.Position = Vector2.new(BoxSize.X / 2 + BoxPos.X, BottomOffset)
                             v.distance.Outline = esp.settings.drawings.distance.outline
                             v.distance.Text = ("%sm"):format(tostring(math.floor((HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude / 3.5714285714)))
-                            v.distance.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.distance.color
+                            v.distance.Color = (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.distance.color
                             BottomOffset = BottomOffset + 15
         
                             v.distance.Font = esp.settings.text_settings.font_family
@@ -248,7 +248,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                         if esp.settings.drawings.view_angle.enabled and Head and Head.CFrame then
                             v.view_angle.From = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).X, game.Workspace.CurrentCamera:worldToViewportPoint(Head.CFrame.p).Y)
                             v.view_angle.To = Vector2.new(game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).X, game.Workspace.CurrentCamera:worldToViewportPoint((Head.CFrame + (Head.CFrame.lookVector * esp.settings.drawings.view_angle.size)).p).Y)
-                            v.view_angle.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.view_angle.color
+                            v.view_angle.Color = (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.view_angle.color
                             v.view_angle.Visible = true
                         else
                             v.view_angle.Visible = false
@@ -258,7 +258,7 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
                             v.tool.Visible = true
                             v.tool.Position = Vector2.new(BoxSize.X + BoxPos.X + v.tool.TextBounds.X / 2 + 3, BoxPos.Y - 3)
                             v.tool.Outline = esp.settings.drawings.tool.outline
-                            v.tool.Color = (esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.tool.color
+                            v.tool.Color = (i.Parent == game.Players and esp.settings.target_settings.enabled and esp.settings.target_settings.target == i and esp.settings.target_settings.color) or (esp.settings.friend_settings.enabled and i:IsFriendsWith(game.Players.LocalPlayer.UserId) and esp.settings.friend_settings.color) or esp.settings.drawings.tool.color
         
                             v.tool.Font = esp.settings.text_settings.font_family
                             v.tool.Size = esp.settings.text_settings.font_size
