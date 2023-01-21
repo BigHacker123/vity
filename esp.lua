@@ -143,6 +143,9 @@ esp.connections.RenderStepped = game.RunService.RenderStepped:Connect(function()
     for i,v in pairs(esp.players) do
         if i.Parent ~= game.Players then
             if esp.settings.ai == false then
+                for i,drawing in pairs(v) do
+                    drawing.Visible = false
+                end
                 continue
             end
         end
